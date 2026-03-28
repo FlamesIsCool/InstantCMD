@@ -113,7 +113,7 @@ InstantCMD/
 ├── setup.bat          # One-click setup script
 ├── run.bat            # One-click launcher
 ├── icon.ico           # Application icon
-├── website/           # Landing page
+├── docs/              # Landing page (GitHub Pages)
 └── .gitignore
 ```
 
