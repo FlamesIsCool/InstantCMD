@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstantCMD - Autocomplete for Windows Command Prompt</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+    <meta name="description" content="InstantCMD adds live autocomplete to Windows Command Prompt. Type and get instant suggestions for commands, flags, files, and executables.">
+
+    <!-- Open Graph for Twitter/Facebook sharing -->
+    <meta property="og:title" content="InstantCMD">
+    <meta property="og:description" content="Live autocomplete for Windows Command Prompt. Like Google Instant but for CMD.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="preview.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="InstantCMD">
+    <meta name="twitter:description" content="Live autocomplete for Windows Command Prompt. Like Google Instant but for CMD.">
+    <meta name="twitter:image" content="preview.png">
+    
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: #0a0a0a;
+            color: #d4d4d4;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            padding: 80px 0 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -1px;
+        }
+
+        h1 span {
+            color: #569cd6;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #888;
+            margin-top: 12px;
+        }
+
+        /* Demo terminal */
+        .terminal {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin: 40px 0;
+            overflow: hidden;
+        }
+
+        .terminal-bar {
+            background: #2d2d2d;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #555;
+        }
+
+        .terminal-title {
+            font-size: 13px;
+            color: #888;
+            margin-left: 8px;
+            font-family: "Cascadia Code", "Consolas", monospace;
+        }
+
+        .terminal-body {
+            padding: 20px;
+            font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .prompt-path {
+            color: #dcdcaa;
+        }
+
+        .prompt-arrow {
+            color: #608b4e;
+            font-weight: bold;
+        }
+
+        .typed {
+            color: #569cd6;
+        }
+
+        .cursor {
+            background: #d4d4d4;
+            color: #1e1e1e;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .suggestion-box {
+            background: #252526;
+            border: 1px solid #3c3c3c;
+            border-radius: 4px;
+            margin: 4px 0 0 0;
+            display: inline-block;
+            min-width: 340px;
+        }
+
+        .suggestion {
+            padding: 4px 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .suggestion.active {
+            background: #264f78;
+            color: #fff;
+        }
+
+        .suggestion .cmd {
+            color: #cccccc;
+        }
+
+        .suggestion.active .cmd {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .suggestion .desc {
+            color: #666;
+            font-style: italic;
+            font-size: 12px;
+        }
+
+        .suggestion.active .desc {
+            color: #aaa;
+        }
+
+        /* Features */
+        .features {
+            margin: 48px 0;
+        }
+
+        .features h2 {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .feature {
+            padding: 16px;
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 6px;
+        }
+
+        .feature strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .feature p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Download */
+        .download {
+            text-align: center;
+            padding: 48px 0;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .download h2 {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .download .subtitle {
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #569cd6;
+            color: #fff;
+            text-decoration: none;
+            padding: 14px 36px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #4a8abf;
+        }
+
+        .meta {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* Controls table */
+        .controls {
+            margin: 40px 0;
+        }
+
+        .controls h2 {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 16px;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 14px;
+        }
+
+        th {
+            color: #888;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td:first-child {
+            font-family: "Cascadia Code", "Consolas", monospace;
+            color: #dcdcaa;
+            white-space: nowrap;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #444;
+            font-size: 13px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        footer a {
+            color: #569cd6;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header {
+                padding: 48px 0 24px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .tagline {
+                font-size: 15px;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .terminal-body {
+                font-size: 12px;
+                padding: 14px;
+            }
+
+            .suggestion-box {
+                min-width: 260px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Instant<span>CMD</span></h1>
+        <p class="tagline">Live autocomplete for Windows Command Prompt.</p>
+    </header>
+
+    <!-- Demo terminal -->
+    <div class="terminal">
+        <div class="terminal-bar">
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+            <span class="terminal-title">InstantCMD</span>
+        </div>
+        <div class="terminal-body">
+            <div>
+                <span class="prompt-path">C:\Users\You</span>
+                <span class="prompt-arrow"> &gt; </span>
+                <span class="typed">di</span><span class="cursor">&nbsp;</span>
+            </div>
+            <div class="suggestion-box">
+                <div class="suggestion active">
+                    <span class="cmd">dir</span>
+                    <span class="desc">List directory contents</span>
+                </div>
+                <div class="suggestion">
+                    <span class="cmd">diskpart</span>
+                    <span class="desc">Disk partition manager</span>
+                </div>
+                <div class="suggestion">
+                    <span class="cmd">dism</span>
+                    <span class="desc">Deployment Image Servicing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <section class="features">
+        <h2>What you get</h2>
+        <div class="feature-grid">
+            <div class="feature">
+                <strong>Live dropdown</strong>
+                <p>Suggestions appear as you type. No tab-spamming.</p>
+            </div>
+            <div class="feature">
+                <strong>127 commands</strong>
+                <p>Every built-in CMD command with descriptions.</p>
+            </div>
+            <div class="feature">
+                <strong>Flag suggestions</strong>
+                <p>Type <code>dir /</code> and see every flag explained.</p>
+            </div>
+            <div class="feature">
+                <strong>PATH discovery</strong>
+                <p>Finds every .exe, .bat, .cmd on your system.</p>
+            </div>
+            <div class="feature">
+                <strong>File completion</strong>
+                <p>Suggests files and folders in your current directory.</p>
+            </div>
+            <div class="feature">
+                <strong>History</strong>
+                <p>Ghost text from past commands. Persists across sessions.</p>
+            </div>
+            <div class="feature">
+                <strong>Syntax coloring</strong>
+                <p>Commands, flags, pipes, variables — all colored.</p>
+            </div>
+            <div class="feature">
+                <strong>Real CMD</strong>
+                <p>Everything runs through cmd.exe. Full compatibility.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls">
+        <h2>Controls</h2>
+        <table>
+            <tr><th>Key</th><th>Action</th></tr>
+            <tr><td>Arrow Keys</td><td>Navigate suggestions</td></tr>
+            <tr><td>Tab</td><td>Accept completion</td></tr>
+            <tr><td>Enter</td><td>Run command</td></tr>
+            <tr><td>Ctrl+C</td><td>Cancel</td></tr>
+            <tr><td>Ctrl+D</td><td>Exit</td></tr>
+        </table>
+    </section>
+
+    <!-- Download -->
+    <section class="download">
+        <h2>Download</h2>
+        <p class="subtitle">Single .exe — no install, no Python needed. Just run it.</p>
+        <a href="InstantCMD.exe" class="btn" download>Download InstantCMD.exe</a>
+        <p class="meta">Windows 10/11 &middot; 7 MB &middot; No dependencies</p>
+    </section>
+
+</div>
+
+</body>
+</html>
